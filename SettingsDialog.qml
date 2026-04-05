@@ -23,7 +23,6 @@ Dialog {
         anchors.fill: parent
         spacing: 0
         
-        // 语言设置区域
         Pane {
             Layout.fillWidth: true
             Material.elevation: 1
@@ -69,7 +68,6 @@ Dialog {
             }
         }
         
-        // 连接设置区域
         Pane {
             Layout.fillWidth: true
             Layout.topMargin: 12
@@ -113,7 +111,6 @@ Dialog {
             }
         }
         
-        // 显示设置区域
         Pane {
             Layout.fillWidth: true
             Layout.topMargin: 12
@@ -161,7 +158,6 @@ Dialog {
             Layout.fillHeight: true
         }
         
-        // 关于信息
         Pane {
             Layout.fillWidth: true
             Material.elevation: 0

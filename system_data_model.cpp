@@ -19,7 +19,12 @@ SystemDataModel::SystemDataModel(QObject *parent)
       work_mode_(0),
       work_mode_text_(tr("Auto Mode")),
       alarm_delay_(10),
-      yolo_threshold_(0.6) {}
+      yolo_threshold_(0.6),
+      yolo_draw_threshold_(0.4),
+      infer_interval_(1),
+      stream_fps_(0.0),
+      infer_ms_(0.0),
+      yolo_enabled_(false) {}
 
 void SystemDataModel::ParseServerData(const QString &json_data) {
   QJsonParseError error;
@@ -36,6 +41,15 @@ void SystemDataModel::ParseServerData(const QString &json_data) {
 
   QJsonObject obj = doc.object();
 
+  const QString type = obj.value("type").toString();
+
+  // yolo事件：{"type":"yolo","person":1,"conf":0.81}
+  if (type == "yolo") {
+    int person = obj.value("person").toInt(0);
+    UpdateHumanStatus(person > 0 ? 2 : 0);
+    return;
+  }
+
   // 解析光照值
   if (obj.contains("light")) {
     double new_light = obj["light"].toDouble();
@@ -48,7 +62,7 @@ void SystemDataModel::ParseServerData(const QString &json_data) {
 
   // 解析门窗状态
   if (obj.contains("door")) {
-    bool door_open = obj["door"].toBool();
+    bool door_open = obj["door"].toInt() != 0;
     if (door_open_ != door_open) {
       UpdateDoorStatus(door_open);
     }
@@ -57,6 +71,14 @@ void SystemDataModel::ParseServerData(const QString &json_data) {
   // 解析人体检测状态
   if (obj.contains("human")) {
     int level = obj["human"].toInt();
+    if (human_detect_level_ != level) {
+      UpdateHumanStatus(level);
+    }
+  }
+
+  // 当前服务端用 pir: 0=无人 1=疑似 2=确认
+  if (obj.contains("pir")) {
+    int level = obj["pir"].toInt();
     if (human_detect_level_ != level) {
       UpdateHumanStatus(level);
     }
@@ -102,6 +124,65 @@ void SystemDataModel::ParseServerData(const QString &json_data) {
     if (yolo_threshold_ != threshold) {
       yolo_threshold_ = threshold;
       emit YoloThresholdChanged();
+    }
+  }
+
+  // 服务端 state: delay / threshold(整数百分比) / yolo
+  if (obj.contains("delay")) {
+    int delay = obj["delay"].toInt();
+    if (alarm_delay_ != delay) {
+      alarm_delay_ = delay;
+      emit AlarmDelayChanged();
+    }
+  }
+
+  if (obj.contains("threshold")) {
+    double threshold = obj["threshold"].toInt() / 100.0;
+    if (!qFuzzyCompare(yolo_threshold_ + 1.0, threshold + 1.0)) {
+      yolo_threshold_ = threshold;
+      emit YoloThresholdChanged();
+    }
+  }
+
+  if (obj.contains("draw_threshold")) {
+    double threshold = obj["draw_threshold"].toInt() / 100.0;
+    if (!qFuzzyCompare(yolo_draw_threshold_ + 1.0, threshold + 1.0)) {
+      yolo_draw_threshold_ = threshold;
+      emit YoloDrawThresholdChanged();
+    }
+  }
+
+  if (obj.contains("infer_interval")) {
+    int n = obj["infer_interval"].toInt();
+    if (n < 1) n = 1;
+    if (n > 6) n = 6;
+    if (infer_interval_ != n) {
+      infer_interval_ = n;
+      emit InferIntervalChanged();
+    }
+  }
+
+  if (obj.contains("fps")) {
+    double fps = obj["fps"].toDouble();
+    if (!qFuzzyCompare(stream_fps_ + 1.0, fps + 1.0)) {
+      stream_fps_ = fps;
+      emit StreamFpsChanged();
+    }
+  }
+
+  if (obj.contains("infer_ms")) {
+    double infer_ms = obj["infer_ms"].toDouble();
+    if (!qFuzzyCompare(infer_ms_ + 1.0, infer_ms + 1.0)) {
+      infer_ms_ = infer_ms;
+      emit InferMsChanged();
+    }
+  }
+
+  if (obj.contains("yolo")) {
+    bool enabled = obj["yolo"].toInt() != 0;
+    if (yolo_enabled_ != enabled) {
+      yolo_enabled_ = enabled;
+      emit YoloEnabledChanged();
     }
   }
 }

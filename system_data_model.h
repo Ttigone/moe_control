@@ -35,6 +35,11 @@ class SystemDataModel : public QObject
     // 阈值设置
     Q_PROPERTY(int alarmDelay READ AlarmDelay NOTIFY AlarmDelayChanged)
     Q_PROPERTY(double yoloThreshold READ YoloThreshold NOTIFY YoloThresholdChanged)
+    Q_PROPERTY(double yoloDrawThreshold READ YoloDrawThreshold NOTIFY YoloDrawThresholdChanged)
+    Q_PROPERTY(int inferInterval READ InferInterval NOTIFY InferIntervalChanged)
+    Q_PROPERTY(double streamFps READ StreamFps NOTIFY StreamFpsChanged)
+    Q_PROPERTY(double inferMs READ InferMs NOTIFY InferMsChanged)
+    Q_PROPERTY(bool yoloEnabled READ YoloEnabled NOTIFY YoloEnabledChanged)
 
 public:
     explicit SystemDataModel(QObject *parent = nullptr);
@@ -60,6 +65,11 @@ public:
     
     int AlarmDelay() const { return alarm_delay_; }
     double YoloThreshold() const { return yolo_threshold_; }
+    double YoloDrawThreshold() const { return yolo_draw_threshold_; }
+    int InferInterval() const { return infer_interval_; }
+    double StreamFps() const { return stream_fps_; }
+    double InferMs() const { return infer_ms_; }
+    bool YoloEnabled() const { return yolo_enabled_; }
 
     // 解析从服务器接收的数据
     Q_INVOKABLE void ParseServerData(const QString &json_data);
@@ -84,6 +94,11 @@ signals:
     void WorkModeTextChanged();
     void AlarmDelayChanged();
     void YoloThresholdChanged();
+    void YoloDrawThresholdChanged();
+    void InferIntervalChanged();
+    void StreamFpsChanged();
+    void InferMsChanged();
+    void YoloEnabledChanged();
 
 private:
     void UpdateLightStatus();
@@ -120,6 +135,11 @@ private:
     // 阈值
     int alarm_delay_;
     double yolo_threshold_;
+    double yolo_draw_threshold_;
+    int infer_interval_;
+    double stream_fps_;
+    double infer_ms_;
+    bool yolo_enabled_;
 };
 
 #endif // SYSTEMDATAMODEL_H

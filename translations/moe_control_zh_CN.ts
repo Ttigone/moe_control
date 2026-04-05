@@ -175,6 +175,58 @@
         <source>Settings</source>
         <translation>设置</translation>
     </message>
+    <message>
+        <source>UI Build: </source>
+        <translation>构建版本: </translation>
+    </message>
+    <message>
+        <source>YOLO Detection:</source>
+        <translation>YOLO检测:</translation>
+    </message>
+    <message>
+        <source>Enabled</source>
+        <translation>已启用</translation>
+    </message>
+    <message>
+        <source>Disabled</source>
+        <translation>已禁用</translation>
+    </message>
+    <message>
+        <source>Auto mode uses PIR+Door to trigger YOLO automatically</source>
+        <translation>自动模式下由红外+门磁自动触发YOLO</translation>
+    </message>
+    <message>
+        <source>YOLO Draw Threshold:</source>
+        <translation>YOLO画框阈值:</translation>
+    </message>
+    <message>
+        <source>Stream Profile</source>
+        <translation>视频分辨率</translation>
+    </message>
+    <message>
+        <source>Inference Interval:</source>
+        <translation>推理间隔:</translation>
+    </message>
+    <message>
+        <source> frame(s)</source>
+        <translation> 帧</translation>
+    </message>
+    <message>
+        <source>Realtime FPS:</source>
+        <translation>实时帧率:</translation>
+    </message>
+    <message>
+        <source>Infer Latency:</source>
+        <translation>推理耗时:</translation>
+    </message>
+    <message>
+        <source>Open Direct MJPEG Stream</source>
+        <translation>直接打开MJPEG流</translation>
+    </message>
+    <message>
+        <source>Click button to open stream in browser</source>
+        <translation>点击按钮将在浏览器中打开监控画面</translation>
+    </message>
 </context>
 <context>
     <name>SystemDataModel</name>

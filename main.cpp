@@ -3,6 +3,7 @@
 #include <QLocale>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QUrl>
 #include <QTranslator>
 
 #include "logger.h"
@@ -10,9 +11,15 @@
 #include "system_data_model.h"
 #include "tcp_client.h"
 
+#ifndef APP_BUILD_INFO
+#define APP_BUILD_INFO "dev"
+#endif
+
 int main(int argc, char *argv[]) {
   Logger::Instance().Initialize();
+#ifndef Q_OS_ANDROID
   qInstallMessageHandler(Logger::QtMessageHandler);
+#endif
 
   // Qt虚拟键盘仅用于桌面端；Android有自己的系统IME，强制设置会覆盖原生输入法导致键盘异常
 #ifndef Q_OS_ANDROID
@@ -24,6 +31,7 @@ int main(int argc, char *argv[]) {
   app.setOrganizationName("MoeControl");
   app.setOrganizationDomain("moe.control");
   app.setApplicationName("MonitoringApp");
+  app.setApplicationVersion(QStringLiteral(APP_BUILD_INFO));
 
   QFont appFont;
   appFont.setFamilies({"Microsoft YaHei UI", "Noto Sans SC", "Roboto",
@@ -75,7 +83,7 @@ int main(int argc, char *argv[]) {
         QCoreApplication::exit(-1);
       },
       Qt::QueuedConnection);
-  engine.loadFromModule("moe_control", "Main");
+  engine.load(QUrl(QStringLiteral("qrc:/qt/qml/moe_control/Main.qml")));
 
   if (engine.rootObjects().isEmpty()) {
     LOG_ERROR("Failed to load QML root objects");

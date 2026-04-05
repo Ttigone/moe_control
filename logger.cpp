@@ -13,6 +13,10 @@
 #include <QStandardPaths>
 #include <QDebug>
 
+#ifdef Q_OS_ANDROID
+#include <android/log.h>
+#endif
+
 Logger &Logger::Instance() {
   static Logger instance;
   return instance;
@@ -147,7 +151,8 @@ void Logger::SetLevel(Level) {}
 // 日志输出函数
 void Logger::Trace(const QString &message) {
 #ifdef Q_OS_ANDROID
-  qDebug() << message;
+  __android_log_print(ANDROID_LOG_VERBOSE, "moe_control", "%s",
+                      message.toUtf8().constData());
 #else
   std::string msg = message.toStdString();
   if (console_logger_) console_logger_->trace(msg);
@@ -157,7 +162,8 @@ void Logger::Trace(const QString &message) {
 
 void Logger::Debug(const QString &message) {
 #ifdef Q_OS_ANDROID
-  qDebug() << message;
+  __android_log_print(ANDROID_LOG_DEBUG, "moe_control", "%s",
+                      message.toUtf8().constData());
 #else
   std::string msg = message.toStdString();
   if (console_logger_) console_logger_->debug(msg);
@@ -167,7 +173,8 @@ void Logger::Debug(const QString &message) {
 
 void Logger::Info(const QString &message) {
 #ifdef Q_OS_ANDROID
-  qInfo() << message;
+  __android_log_print(ANDROID_LOG_INFO, "moe_control", "%s",
+                      message.toUtf8().constData());
 #else
   std::string msg = message.toStdString();
   if (console_logger_) console_logger_->info(msg);
@@ -177,7 +184,8 @@ void Logger::Info(const QString &message) {
 
 void Logger::Warning(const QString &message) {
 #ifdef Q_OS_ANDROID
-  qWarning() << message;
+  __android_log_print(ANDROID_LOG_WARN, "moe_control", "%s",
+                      message.toUtf8().constData());
 #else
   std::string msg = message.toStdString();
   if (console_logger_) console_logger_->warn(msg);
@@ -187,7 +195,8 @@ void Logger::Warning(const QString &message) {
 
 void Logger::Error(const QString &message) {
 #ifdef Q_OS_ANDROID
-  qCritical() << message;
+  __android_log_print(ANDROID_LOG_ERROR, "moe_control", "%s",
+                      message.toUtf8().constData());
 #else
   std::string msg = message.toStdString();
   if (console_logger_) console_logger_->error(msg);
@@ -197,7 +206,8 @@ void Logger::Error(const QString &message) {
 
 void Logger::Critical(const QString &message) {
 #ifdef Q_OS_ANDROID
-  qCritical() << message;
+  __android_log_print(ANDROID_LOG_FATAL, "moe_control", "%s",
+                      message.toUtf8().constData());
 #else
   std::string msg = message.toStdString();
   if (console_logger_) console_logger_->critical(msg);

@@ -10,8 +10,8 @@ TcpClient::TcpClient(QObject *parent)
     : QObject(parent),
       socket_(new QTcpSocket(this)),
       reconnect_timer_(new QTimer(this)),
-      server_address_("192.168.1.100"),
-      server_port_(8888),
+      server_address_("192.168.3.16"),
+  server_port_(12345),
       connected_(false) {
   connect(socket_, &QTcpSocket::connected, this, &TcpClient::OnConnected);
   connect(socket_, &QTcpSocket::disconnected, this, &TcpClient::OnDisconnected);
@@ -81,8 +81,8 @@ void TcpClient::SendCommand(const QString &command) {
 
 void TcpClient::SwitchMode(int mode) {
   QJsonObject json;
-  json["cmd"] = "switch_mode";
-  json["mode"] = mode;  // 0:自动 1:手动 2:远程
+  json["cmd"] = "set_mode";
+  json["value"] = mode;  // 0:自动 1:手动 2:远程
 
   QJsonDocument doc(json);
   SendCommand(doc.toJson(QJsonDocument::Compact));
@@ -99,8 +99,50 @@ void TcpClient::SetAlarmDelay(int seconds) {
 
 void TcpClient::SetYoloThreshold(double threshold) {
   QJsonObject json;
-  json["cmd"] = "set_yolo_threshold";
-  json["value"] = threshold;
+  json["cmd"] = "set_threshold";
+  int value = qBound(1, qRound(threshold * 100.0), 99);
+  json["value"] = value;
+
+  QJsonDocument doc(json);
+  SendCommand(doc.toJson(QJsonDocument::Compact));
+}
+
+void TcpClient::SetYoloDrawThreshold(double threshold) {
+  QJsonObject json;
+  json["cmd"] = "set_draw_threshold";
+  int value = qBound(20, qRound(threshold * 100.0), 95);
+  json["value"] = value;
+
+  QJsonDocument doc(json);
+  SendCommand(doc.toJson(QJsonDocument::Compact));
+}
+
+void TcpClient::SetStreamProfile(int profile) {
+  QJsonObject json;
+  json["cmd"] = "set_stream_profile";
+  if (profile != 1080 && profile != 720 && profile != 480) {
+    profile = 1080;
+  }
+  json["value"] = profile;
+
+  QJsonDocument doc(json);
+  SendCommand(doc.toJson(QJsonDocument::Compact));
+}
+
+void TcpClient::SetInferInterval(int n) {
+  QJsonObject json;
+  json["cmd"] = "set_infer_interval";
+  if (n < 1) n = 1;
+  if (n > 6) n = 6;
+  json["value"] = n;
+
+  QJsonDocument doc(json);
+  SendCommand(doc.toJson(QJsonDocument::Compact));
+}
+
+void TcpClient::SetYoloEnabled(bool enabled) {
+  QJsonObject json;
+  json["cmd"] = enabled ? "enable_yolo" : "disable_yolo";
 
   QJsonDocument doc(json);
   SendCommand(doc.toJson(QJsonDocument::Compact));

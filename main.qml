@@ -12,6 +12,8 @@ ApplicationWindow {
     visible: true
     title: qsTr("Intelligent Monitoring System")
 
+    property int androidTopInset: Qt.platform.os === "android" ? 24 : 0
+
     property TcpClient tcpClient: TcpClient
     property SystemDataModel dataModel: SystemDataModel
     property SettingsManager settingsManager: SettingsManager
@@ -30,8 +32,11 @@ ApplicationWindow {
     }
 
     header: ToolBar {
+        implicitHeight: 56 + window.androidTopInset
+
         RowLayout {
             anchors.fill: parent
+            anchors.topMargin: window.androidTopInset
             spacing: 8
             
             Label {
@@ -126,6 +131,33 @@ ApplicationWindow {
                                     tcpClient.ConnectToServer()
                                 }
                             }
+                        }
+                    }
+
+                    Label {
+                        text: qsTr("UI Build: ") + Qt.application.version
+                        font.pixelSize: 11
+                        color: Material.hintTextColor
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label {
+                            text: qsTr("YOLO Detection:")
+                            font.pixelSize: 13
+                        }
+                        Label {
+                            text: dataModel.yoloEnabled ? qsTr("Enabled") : qsTr("Disabled")
+                            font.pixelSize: 13
+                            font.bold: true
+                            color: dataModel.yoloEnabled ? "#4CAF50" : "#EF5350"
+                            Layout.fillWidth: true
+                            horizontalAlignment: Text.AlignRight
+                        }
+                        Switch {
+                            checked: dataModel.yoloEnabled
+                            enabled: dataModel.workMode !== 0
+                            onToggled: tcpClient.SetYoloEnabled(checked)
                         }
                     }
                 }
@@ -276,6 +308,16 @@ ApplicationWindow {
                         }
                     }
 
+                    // 紧急停止：报警中时任意模式可执行
+                    Button {
+                        visible: dataModel.alarmActive
+                        text: qsTr("Emergency Stop Alarm")
+                        Layout.fillWidth: true
+                        Material.background: "#F44336"
+                        Material.foreground: "white"
+                        onClicked: tcpClient.StopAlarm()
+                    }
+
                     // 手动模式控制按钮
                     ColumnLayout {
                         Layout.fillWidth: true
@@ -362,6 +404,36 @@ ApplicationWindow {
                         text: qsTr("Threshold Settings")
                         font.pixelSize: 16
                         font.bold: true
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label {
+                            text: qsTr("YOLO Detection:")
+                            font.pixelSize: 14
+                        }
+                        Label {
+                            text: dataModel.yoloEnabled ? qsTr("Enabled") : qsTr("Disabled")
+                            font.pixelSize: 14
+                            font.bold: true
+                            color: dataModel.yoloEnabled ? "#4CAF50" : "#EF5350"
+                            Layout.fillWidth: true
+                            horizontalAlignment: Text.AlignRight
+                        }
+                        Switch {
+                            checked: dataModel.yoloEnabled
+                            enabled: dataModel.workMode !== 0
+                            onToggled: tcpClient.SetYoloEnabled(checked)
+                        }
+                    }
+
+                    Label {
+                        visible: dataModel.workMode === 0
+                        text: qsTr("Auto mode uses PIR+Door to trigger YOLO automatically")
+                        font.pixelSize: 11
+                        color: Material.hintTextColor
+                        wrapMode: Text.WordWrap
+                        Layout.fillWidth: true
                     }
 
                     // 安防触发延迟
@@ -468,6 +540,58 @@ ApplicationWindow {
                             }
                         }
                     }
+
+                    // YOLO画框阈值
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Label {
+                                text: qsTr("YOLO Draw Threshold:")
+                                font.pixelSize: 14
+                            }
+                            Label {
+                                text: dataModel.yoloDrawThreshold.toFixed(2)
+                                font.pixelSize: 14
+                                font.bold: true
+                                color: Material.accent
+                                Layout.fillWidth: true
+                                horizontalAlignment: Text.AlignRight
+                            }
+                        }
+
+                        Slider {
+                            id: drawThresholdSlider
+                            Layout.fillWidth: true
+                            from: 0.2
+                            to: 0.8
+                            stepSize: 0.05
+                            value: dataModel.yoloDrawThreshold
+                            onMoved: {
+                                var newValue = Math.round(value * 100) / 100
+                                tcpClient.SetYoloDrawThreshold(newValue)
+                            }
+                        }
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Label {
+                                text: "0.2"
+                                font.pixelSize: 12
+                                color: Material.hintTextColor
+                            }
+                            Item {
+                                Layout.fillWidth: true
+                            }
+                            Label {
+                                text: "0.8"
+                                font.pixelSize: 12
+                                color: Material.hintTextColor
+                            }
+                        }
+                    }
                 }
             }
 
@@ -488,6 +612,90 @@ ApplicationWindow {
                         font.bold: true
                     }
 
+                    Label {
+                        text: qsTr("Stream Profile")
+                        font.pixelSize: 14
+                        font.bold: true
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+
+                        Button {
+                            text: "1080p"
+                            Layout.fillWidth: true
+                            onClicked: tcpClient.SetStreamProfile(1080)
+                        }
+                        Button {
+                            text: "720p"
+                            Layout.fillWidth: true
+                            onClicked: tcpClient.SetStreamProfile(720)
+                        }
+                        Button {
+                            text: "480p"
+                            Layout.fillWidth: true
+                            onClicked: tcpClient.SetStreamProfile(480)
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label {
+                            text: qsTr("Inference Interval:")
+                            font.pixelSize: 14
+                        }
+                        Label {
+                            text: dataModel.inferInterval + qsTr(" frame(s)")
+                            font.pixelSize: 14
+                            font.bold: true
+                            color: Material.accent
+                            Layout.fillWidth: true
+                            horizontalAlignment: Text.AlignRight
+                        }
+                    }
+
+                    Slider {
+                        Layout.fillWidth: true
+                        from: 1
+                        to: 6
+                        stepSize: 1
+                        value: dataModel.inferInterval
+                        onMoved: tcpClient.SetInferInterval(Math.round(value))
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label {
+                            text: qsTr("Realtime FPS:")
+                            font.pixelSize: 13
+                        }
+                        Label {
+                            text: dataModel.streamFps.toFixed(1)
+                            font.pixelSize: 13
+                            font.bold: true
+                            color: Material.accent
+                            Layout.fillWidth: true
+                            horizontalAlignment: Text.AlignRight
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label {
+                            text: qsTr("Infer Latency:")
+                            font.pixelSize: 13
+                        }
+                        Label {
+                            text: dataModel.inferMs.toFixed(1) + " ms"
+                            font.pixelSize: 13
+                            font.bold: true
+                            color: Material.accent
+                            Layout.fillWidth: true
+                            horizontalAlignment: Text.AlignRight
+                        }
+                    }
+
                     Button {
                         text: qsTr("View Live Stream")
                         Layout.fillWidth: true
@@ -495,6 +703,15 @@ ApplicationWindow {
                         icon.name: "video"
                         onClicked: {
                             var url = "http://" + tcpClient.serverAddress + ":80"
+                            Qt.openUrlExternally(url)
+                        }
+                    }
+
+                    Button {
+                        text: qsTr("Open Direct MJPEG Stream")
+                        Layout.fillWidth: true
+                        onClicked: {
+                            var url = "http://" + tcpClient.serverAddress + ":8091/?action=stream"
                             Qt.openUrlExternally(url)
                         }
                     }
