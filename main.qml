@@ -18,10 +18,65 @@ ApplicationWindow {
     property SystemDataModel dataModel: SystemDataModel
     property SettingsManager settingsManager: SettingsManager
 
+    ListModel {
+        id: recordModel
+    }
+
+    function formatBytes(bytes) {
+        if (bytes < 1024)
+            return bytes + " B"
+        if (bytes < 1024 * 1024)
+            return (bytes / 1024.0).toFixed(1) + " KB"
+        return (bytes / (1024.0 * 1024.0)).toFixed(1) + " MB"
+    }
+
+    function formatTime(ts) {
+        if (!ts || ts <= 0)
+            return "-"
+        var d = new Date(ts * 1000)
+        var yyyy = d.getFullYear()
+        var mm = ("0" + (d.getMonth() + 1)).slice(-2)
+        var dd = ("0" + d.getDate()).slice(-2)
+        var hh = ("0" + d.getHours()).slice(-2)
+        var mi = ("0" + d.getMinutes()).slice(-2)
+        return yyyy + "-" + mm + "-" + dd + " " + hh + ":" + mi
+    }
+
+    function refreshRecordings() {
+        if (!tcpClient.serverAddress || tcpClient.serverAddress.length === 0)
+            return
+
+        var xhr = new XMLHttpRequest()
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState !== XMLHttpRequest.DONE)
+                return
+            if (xhr.status !== 200)
+                return
+            try {
+                var obj = JSON.parse(xhr.responseText)
+                if (!obj.items)
+                    return
+                recordModel.clear()
+                for (var i = 0; i < obj.items.length; ++i) {
+                    var it = obj.items[i]
+                    recordModel.append({
+                                           name: it.name,
+                                           sizeText: formatBytes(it.size || 0),
+                                           mtimeText: formatTime(it.mtime || 0)
+                                       })
+                }
+            } catch (e) {
+            }
+        }
+        xhr.open("GET", "http://" + tcpClient.serverAddress + ":8091/api/records")
+        xhr.send()
+    }
+
     Component.onCompleted: {
         tcpClient.DataReceived.connect(function (data) {
             dataModel.ParseServerData(data)
         })
+        refreshRecordings()
     }
     
     // 设置对话框
@@ -242,7 +297,9 @@ ApplicationWindow {
                             font.pixelSize: 14
                         }
                         Label {
-                            text: dataModel.recordingStatus
+                            text: dataModel.isRecording
+                                  ? dataModel.recordingStatus + " (" + dataModel.recordingElapsedText + ")"
+                                  : dataModel.recordingStatus
                             font.pixelSize: 14
                             font.bold: true
                             color: dataModel.isRecording ? "#F44336" : Material.accent
@@ -713,6 +770,103 @@ ApplicationWindow {
                         onClicked: {
                             var url = "http://" + tcpClient.serverAddress + ":8091/?action=stream"
                             Qt.openUrlExternally(url)
+                        }
+                    }
+
+                    RowLayout {
+                        Layout.fillWidth: true
+
+                        Label {
+                            text: qsTr("Recordings")
+                            font.pixelSize: 14
+                            font.bold: true
+                            Layout.fillWidth: true
+                        }
+
+                        Button {
+                            text: qsTr("Refresh")
+                            onClicked: refreshRecordings()
+                        }
+                    }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 220
+                        color: "transparent"
+                        border.color: Material.dividerColor
+                        radius: 6
+
+                        ScrollView {
+                            anchors.fill: parent
+                            anchors.margins: 6
+
+                            ColumnLayout {
+                                width: parent.width
+                                spacing: 8
+
+                                Repeater {
+                                    model: recordModel
+
+                                    delegate: Rectangle {
+                                        Layout.fillWidth: true
+                                        height: 72
+                                        radius: 6
+                                        color: "transparent"
+                                        border.color: Material.dividerColor
+
+                                        RowLayout {
+                                            anchors.fill: parent
+                                            anchors.margins: 8
+                                            spacing: 8
+
+                                            ColumnLayout {
+                                                Layout.fillWidth: true
+                                                spacing: 2
+
+                                                Label {
+                                                    text: name
+                                                    elide: Text.ElideMiddle
+                                                    font.pixelSize: 12
+                                                    font.bold: true
+                                                    Layout.fillWidth: true
+                                                }
+                                                Label {
+                                                    text: mtimeText + "  •  " + sizeText
+                                                    font.pixelSize: 11
+                                                    color: Material.hintTextColor
+                                                    Layout.fillWidth: true
+                                                }
+                                            }
+
+                                            Button {
+                                                text: qsTr("Play")
+                                                onClicked: {
+                                                    var url = "http://" + tcpClient.serverAddress + ":8091/play?file=" + encodeURIComponent(
+                                                                name)
+                                                    Qt.openUrlExternally(url)
+                                                }
+                                            }
+
+                                            Button {
+                                                text: qsTr("Download")
+                                                onClicked: {
+                                                    var url = "http://" + tcpClient.serverAddress + ":8091/download?file=" + encodeURIComponent(
+                                                                name)
+                                                    Qt.openUrlExternally(url)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                Label {
+                                    visible: recordModel.count === 0
+                                    text: qsTr("No recording files")
+                                    color: Material.hintTextColor
+                                    horizontalAlignment: Text.AlignHCenter
+                                    Layout.fillWidth: true
+                                }
+                            }
                         }
                     }
 

@@ -27,6 +27,9 @@ class SystemDataModel : public QObject
     // 录制状态
     Q_PROPERTY(QString recordingStatus READ RecordingStatus NOTIFY RecordingStatusChanged)
     Q_PROPERTY(bool isRecording READ IsRecording NOTIFY IsRecordingChanged)
+    Q_PROPERTY(int recordingElapsed READ RecordingElapsed NOTIFY RecordingElapsedChanged)
+    Q_PROPERTY(int recordingDuration READ RecordingDuration NOTIFY RecordingDurationChanged)
+    Q_PROPERTY(QString recordingElapsedText READ RecordingElapsedText NOTIFY RecordingElapsedChanged)
     
     // 工作模式
     Q_PROPERTY(int workMode READ WorkMode NOTIFY WorkModeChanged) // 0:自动 1:手动 2:远程
@@ -59,6 +62,9 @@ public:
     
     QString RecordingStatus() const { return recording_status_; }
     bool IsRecording() const { return is_recording_; }
+    int RecordingElapsed() const { return recording_elapsed_; }
+    int RecordingDuration() const { return recording_duration_; }
+    QString RecordingElapsedText() const;
     
     int WorkMode() const { return work_mode_; }
     QString WorkModeText() const { return work_mode_text_; }
@@ -90,6 +96,8 @@ signals:
     void AlarmActiveChanged();
     void RecordingStatusChanged();
     void IsRecordingChanged();
+    void RecordingElapsedChanged();
+    void RecordingDurationChanged();
     void WorkModeChanged();
     void WorkModeTextChanged();
     void AlarmDelayChanged();
@@ -127,6 +135,8 @@ private:
     // 录制状态
     QString recording_status_;
     bool is_recording_;
+    int recording_elapsed_;
+    int recording_duration_;
     
     // 工作模式
     int work_mode_;

@@ -16,6 +16,8 @@ SystemDataModel::SystemDataModel(QObject *parent)
       alarm_active_(false),
       recording_status_(tr("Not Recording")),
       is_recording_(false),
+      recording_elapsed_(0),
+      recording_duration_(0),
       work_mode_(0),
       work_mode_text_(tr("Auto Mode")),
       alarm_delay_(10),
@@ -97,6 +99,49 @@ void SystemDataModel::ParseServerData(const QString &json_data) {
     bool recording = obj["recording"].toBool();
     if (is_recording_ != recording) {
       UpdateRecordingStatus(recording);
+    }
+  }
+
+  if (obj.contains("active") && type == "recording") {
+    bool recording = obj["active"].toInt(0) != 0;
+    if (is_recording_ != recording) {
+      UpdateRecordingStatus(recording);
+    }
+  }
+
+  if (obj.contains("elapsed")) {
+    int elapsed = obj["elapsed"].toInt();
+    if (elapsed < 0) elapsed = 0;
+    if (recording_elapsed_ != elapsed) {
+      recording_elapsed_ = elapsed;
+      emit RecordingElapsedChanged();
+    }
+  }
+
+  if (obj.contains("record_elapsed")) {
+    int elapsed = obj["record_elapsed"].toInt();
+    if (elapsed < 0) elapsed = 0;
+    if (recording_elapsed_ != elapsed) {
+      recording_elapsed_ = elapsed;
+      emit RecordingElapsedChanged();
+    }
+  }
+
+  if (obj.contains("duration")) {
+    int duration = obj["duration"].toInt();
+    if (duration < 0) duration = 0;
+    if (recording_duration_ != duration) {
+      recording_duration_ = duration;
+      emit RecordingDurationChanged();
+    }
+  }
+
+  if (obj.contains("record_duration")) {
+    int duration = obj["record_duration"].toInt();
+    if (duration < 0) duration = 0;
+    if (recording_duration_ != duration) {
+      recording_duration_ = duration;
+      emit RecordingDurationChanged();
     }
   }
 
@@ -264,8 +309,20 @@ void SystemDataModel::UpdateAlarmStatus(bool active) {
 void SystemDataModel::UpdateRecordingStatus(bool recording) {
   is_recording_ = recording;
   recording_status_ = recording ? tr("Recording") : tr("Not Recording");
+  if (!recording && recording_elapsed_ != 0) {
+    recording_elapsed_ = 0;
+    emit RecordingElapsedChanged();
+  }
   emit IsRecordingChanged();
   emit RecordingStatusChanged();
+}
+
+QString SystemDataModel::RecordingElapsedText() const {
+  int sec = recording_elapsed_;
+  if (sec < 0) sec = 0;
+  int mm = sec / 60;
+  int ss = sec % 60;
+  return QString("%1:%2").arg(mm, 2, 10, QChar('0')).arg(ss, 2, 10, QChar('0'));
 }
 
 void SystemDataModel::UpdateWorkModeText() {
