@@ -271,6 +271,15 @@ void SystemDataModel::SetYoloThreshold(double threshold) {
   }
 }
 
+void SystemDataModel::SetYoloDrawThreshold(double threshold) {
+  if (threshold < 0.2) threshold = 0.2;
+  if (threshold > 0.8) threshold = 0.8;
+  if (!qFuzzyCompare(yolo_draw_threshold_ + 1.0, threshold + 1.0)) {
+    yolo_draw_threshold_ = threshold;
+    emit YoloDrawThresholdChanged();
+  }
+}
+
 void SystemDataModel::UpdateLightStatus() {
   QString new_status;
   if (light_value_ < 100) {

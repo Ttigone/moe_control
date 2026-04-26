@@ -59,8 +59,13 @@ ApplicationWindow {
                 recordModel.clear()
                 for (var i = 0; i < obj.items.length; ++i) {
                     var it = obj.items[i]
+                    if (!it.name)
+                        continue
+                    var nameStr = String(it.name)
+                    var isMjpeg = nameStr.endsWith(".mjpeg")
                     recordModel.append({
-                                           name: it.name,
+                                           name: nameStr,
+                                           isMjpeg: isMjpeg,
                                            sizeText: formatBytes(it.size || 0),
                                            mtimeText: formatTime(it.mtime || 0)
                                        })
@@ -661,6 +666,7 @@ ApplicationWindow {
                             enabled: dataModel.yoloDrawEnabled
                             onMoved: {
                                 var newValue = Math.round(value * 100) / 100
+                                dataModel.SetYoloDrawThreshold(newValue)
                                 tcpClient.SetYoloDrawThreshold(newValue)
                             }
                         }
@@ -828,78 +834,103 @@ ApplicationWindow {
                         color: "transparent"
                         border.color: Material.dividerColor
                         radius: 6
+                        clip: true
 
-                        ScrollView {
+                        ListView {
+                            id: recordListView
                             anchors.fill: parent
                             anchors.margins: 6
+                            clip: true
+                            spacing: 8
+                            model: recordModel
 
-                            ColumnLayout {
-                                width: parent.width
-                                spacing: 8
+                            delegate: Rectangle {
+                                width: recordListView.width
+                                height: 88
+                                radius: 6
+                                color: "transparent"
+                                border.color: Material.dividerColor
+                                clip: true
 
-                                Repeater {
-                                    model: recordModel
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 8
+                                    spacing: 8
 
-                                    delegate: Rectangle {
+                                    ColumnLayout {
                                         Layout.fillWidth: true
-                                        height: 72
-                                        radius: 6
-                                        color: "transparent"
-                                        border.color: Material.dividerColor
+                                        Layout.minimumWidth: 0
+                                        spacing: 2
 
-                                        RowLayout {
-                                            anchors.fill: parent
-                                            anchors.margins: 8
-                                            spacing: 8
+                                        Label {
+                                            text: name
+                                            elide: Text.ElideMiddle
+                                            font.pixelSize: 12
+                                            font.bold: true
+                                            Layout.fillWidth: true
+                                            maximumLineCount: 1
+                                        }
+                                        Label {
+                                            text: mtimeText + "  •  " + sizeText
+                                            font.pixelSize: 11
+                                            color: Material.hintTextColor
+                                            Layout.fillWidth: true
+                                            elide: Text.ElideRight
+                                            maximumLineCount: 1
+                                        }
+                                    }
 
-                                            ColumnLayout {
-                                                Layout.fillWidth: true
-                                                spacing: 2
+                                    ColumnLayout {
+                                        Layout.preferredWidth: 84
+                                        Layout.maximumWidth: 84
+                                        Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                                        spacing: 6
 
-                                                Label {
-                                                    text: name
-                                                    elide: Text.ElideMiddle
-                                                    font.pixelSize: 12
-                                                    font.bold: true
-                                                    Layout.fillWidth: true
-                                                }
-                                                Label {
-                                                    text: mtimeText + "  •  " + sizeText
-                                                    font.pixelSize: 11
-                                                    color: Material.hintTextColor
-                                                    Layout.fillWidth: true
-                                                }
+                                        Button {
+                                            text: qsTr("Play")
+                                            Layout.fillWidth: true
+                                            implicitHeight: 32
+                                            enabled: isMjpeg
+                                            visible: isMjpeg
+                                            onClicked: {
+                                                var url = "http://" + tcpClient.serverAddress + ":8091/play?file=" + encodeURIComponent(
+                                                            name)
+                                                Qt.openUrlExternally(url)
                                             }
+                                        }
 
-                                            Button {
-                                                text: qsTr("Play")
-                                                onClicked: {
-                                                    var url = "http://" + tcpClient.serverAddress + ":8091/play?file=" + encodeURIComponent(
-                                                                name)
-                                                    Qt.openUrlExternally(url)
-                                                }
+                                        Button {
+                                            text: qsTr("Download")
+                                            Layout.fillWidth: true
+                                            implicitHeight: 32
+                                            enabled: isMjpeg
+                                            visible: isMjpeg
+                                            onClicked: {
+                                                var url = "http://" + tcpClient.serverAddress + ":8091/download?file=" + encodeURIComponent(
+                                                            name)
+                                                Qt.openUrlExternally(url)
                                             }
+                                        }
 
-                                            Button {
-                                                text: qsTr("Download")
-                                                onClicked: {
-                                                    var url = "http://" + tcpClient.serverAddress + ":8091/download?file=" + encodeURIComponent(
-                                                                name)
-                                                    Qt.openUrlExternally(url)
-                                                }
-                                            }
+                                        Label {
+                                            text: qsTr("Meta")
+                                            visible: !isMjpeg
+                                            font.pixelSize: 11
+                                            color: Material.hintTextColor
+                                            horizontalAlignment: Text.AlignHCenter
+                                            Layout.fillWidth: true
                                         }
                                     }
                                 }
-
-                                Label {
-                                    visible: recordModel.count === 0
-                                    text: qsTr("No recording files")
-                                    color: Material.hintTextColor
-                                    horizontalAlignment: Text.AlignHCenter
-                                    Layout.fillWidth: true
-                                }
                             }
+                        }
+
+                        Label {
+                            visible: recordModel.count === 0
+                            text: qsTr("No recording files")
+                            color: Material.hintTextColor
+                            horizontalAlignment: Text.AlignHCenter
+                            anchors.centerIn: parent
                         }
                     }
 

@@ -86,6 +86,7 @@ public:
     Q_INVOKABLE void SetWorkMode(int mode);
     Q_INVOKABLE void SetAlarmDelay(int seconds);
     Q_INVOKABLE void SetYoloThreshold(double threshold);
+    Q_INVOKABLE void SetYoloDrawThreshold(double threshold);
 
 signals:
     void LightValueChanged();
