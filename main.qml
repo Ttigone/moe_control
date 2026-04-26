@@ -493,6 +493,38 @@ ApplicationWindow {
                         Layout.fillWidth: true
                     }
 
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Label {
+                            text: qsTr("YOLO Draw Box:")
+                            font.pixelSize: 14
+                        }
+                        Label {
+                            text: dataModel.yoloDrawEnabled
+                                  ? qsTr("Enabled (normal mode)")
+                                  : qsTr("Disabled (trigger-chain only)")
+                            font.pixelSize: 12
+                            font.bold: true
+                            color: dataModel.yoloDrawEnabled ? "#4CAF50" : "#FF9800"
+                            Layout.fillWidth: true
+                            horizontalAlignment: Text.AlignRight
+                        }
+                        Switch {
+                            checked: dataModel.yoloDrawEnabled
+                            onToggled: tcpClient.SetYoloDrawEnabled(checked)
+                        }
+                    }
+
+                    Label {
+                        text: dataModel.yoloDrawEnabled
+                              ? qsTr("ON: keep current YOLO behavior and draw boxes")
+                              : qsTr("OFF: only run YOLO after Door+PIR trigger (low power)")
+                        font.pixelSize: 11
+                        color: Material.hintTextColor
+                        wrapMode: Text.WordWrap
+                        Layout.fillWidth: true
+                    }
+
                     // 安防触发延迟
                     ColumnLayout {
                         Layout.fillWidth: true
@@ -626,6 +658,7 @@ ApplicationWindow {
                             to: 0.8
                             stepSize: 0.05
                             value: dataModel.yoloDrawThreshold
+                            enabled: dataModel.yoloDrawEnabled
                             onMoved: {
                                 var newValue = Math.round(value * 100) / 100
                                 tcpClient.SetYoloDrawThreshold(newValue)

@@ -148,6 +148,15 @@ void TcpClient::SetYoloEnabled(bool enabled) {
   SendCommand(doc.toJson(QJsonDocument::Compact));
 }
 
+void TcpClient::SetYoloDrawEnabled(bool enabled) {
+  QJsonObject json;
+  json["cmd"] = "set_yolo_draw";
+  json["value"] = enabled ? 1 : 0;
+
+  QJsonDocument doc(json);
+  SendCommand(doc.toJson(QJsonDocument::Compact));
+}
+
 void TcpClient::TriggerAlarm() {
   QJsonObject json;
   json["cmd"] = "trigger_alarm";

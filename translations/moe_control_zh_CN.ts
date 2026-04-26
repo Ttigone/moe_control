@@ -224,6 +224,46 @@
         <translation>直接打开MJPEG流</translation>
     </message>
     <message>
+        <source>YOLO Draw Box:</source>
+        <translation>YOLO画框开关:</translation>
+    </message>
+    <message>
+        <source>Enabled (normal mode)</source>
+        <translation>已启用（常规模式）</translation>
+    </message>
+    <message>
+        <source>Disabled (trigger-chain only)</source>
+        <translation>已禁用（仅触发链）</translation>
+    </message>
+    <message>
+        <source>ON: keep current YOLO behavior and draw boxes</source>
+        <translation>开启：保持当前YOLO行为并绘制框</translation>
+    </message>
+    <message>
+        <source>OFF: only run YOLO after Door+PIR trigger (low power)</source>
+        <translation>关闭：仅在门磁+红外触发后运行YOLO（低功耗）</translation>
+    </message>
+    <message>
+        <source>Recordings</source>
+        <translation>录像文件</translation>
+    </message>
+    <message>
+        <source>Refresh</source>
+        <translation>刷新</translation>
+    </message>
+    <message>
+        <source>Play</source>
+        <translation>播放</translation>
+    </message>
+    <message>
+        <source>Download</source>
+        <translation>下载</translation>
+    </message>
+    <message>
+        <source>No recording files</source>
+        <translation>暂无录像文件</translation>
+    </message>
+    <message>
         <source>Click button to open stream in browser</source>
         <translation>点击按钮将在浏览器中打开监控画面</translation>
     </message>

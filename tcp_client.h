@@ -33,6 +33,7 @@ public:
     Q_INVOKABLE void SetStreamProfile(int profile); // 1080/720/480
     Q_INVOKABLE void SetInferInterval(int n);       // 1..6
     Q_INVOKABLE void SetYoloEnabled(bool enabled);
+    Q_INVOKABLE void SetYoloDrawEnabled(bool enabled);
     Q_INVOKABLE void TriggerAlarm();
     Q_INVOKABLE void StopAlarm();
     Q_INVOKABLE void StartRecording(int duration);

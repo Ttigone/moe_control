@@ -26,7 +26,8 @@ SystemDataModel::SystemDataModel(QObject *parent)
       infer_interval_(1),
       stream_fps_(0.0),
       infer_ms_(0.0),
-      yolo_enabled_(false) {}
+      yolo_enabled_(false),
+      yolo_draw_enabled_(true) {}
 
 void SystemDataModel::ParseServerData(const QString &json_data) {
   QJsonParseError error;
@@ -228,6 +229,22 @@ void SystemDataModel::ParseServerData(const QString &json_data) {
     if (yolo_enabled_ != enabled) {
       yolo_enabled_ = enabled;
       emit YoloEnabledChanged();
+    }
+  }
+
+  if (obj.contains("yolo_draw")) {
+    bool enabled = obj["yolo_draw"].toInt() != 0;
+    if (yolo_draw_enabled_ != enabled) {
+      yolo_draw_enabled_ = enabled;
+      emit YoloDrawEnabledChanged();
+    }
+  }
+
+  if (obj.contains("yolo_draw_enabled")) {
+    bool enabled = obj["yolo_draw_enabled"].toBool();
+    if (yolo_draw_enabled_ != enabled) {
+      yolo_draw_enabled_ = enabled;
+      emit YoloDrawEnabledChanged();
     }
   }
 }

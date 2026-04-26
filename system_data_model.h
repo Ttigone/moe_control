@@ -43,6 +43,7 @@ class SystemDataModel : public QObject
     Q_PROPERTY(double streamFps READ StreamFps NOTIFY StreamFpsChanged)
     Q_PROPERTY(double inferMs READ InferMs NOTIFY InferMsChanged)
     Q_PROPERTY(bool yoloEnabled READ YoloEnabled NOTIFY YoloEnabledChanged)
+    Q_PROPERTY(bool yoloDrawEnabled READ YoloDrawEnabled NOTIFY YoloDrawEnabledChanged)
 
 public:
     explicit SystemDataModel(QObject *parent = nullptr);
@@ -76,6 +77,7 @@ public:
     double StreamFps() const { return stream_fps_; }
     double InferMs() const { return infer_ms_; }
     bool YoloEnabled() const { return yolo_enabled_; }
+    bool YoloDrawEnabled() const { return yolo_draw_enabled_; }
 
     // 解析从服务器接收的数据
     Q_INVOKABLE void ParseServerData(const QString &json_data);
@@ -107,6 +109,7 @@ signals:
     void StreamFpsChanged();
     void InferMsChanged();
     void YoloEnabledChanged();
+    void YoloDrawEnabledChanged();
 
 private:
     void UpdateLightStatus();
@@ -150,6 +153,7 @@ private:
     double stream_fps_;
     double infer_ms_;
     bool yolo_enabled_;
+    bool yolo_draw_enabled_;
 };
 
 #endif // SYSTEMDATAMODEL_H
