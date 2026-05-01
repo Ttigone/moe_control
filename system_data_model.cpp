@@ -89,7 +89,15 @@ void SystemDataModel::ParseServerData(const QString &json_data) {
 
   // 解析报警状态
   if (obj.contains("alarm")) {
-    bool active = obj["alarm"].toBool();
+    bool active = obj["alarm"].toInt(0) != 0;
+    if (alarm_active_ != active) {
+      UpdateAlarmStatus(active);
+    }
+  }
+
+  // 处理报警事件
+  if (type == "alarm" && obj.contains("active")) {
+    bool active = obj["active"].toInt(0) != 0;
     if (alarm_active_ != active) {
       UpdateAlarmStatus(active);
     }
@@ -97,7 +105,7 @@ void SystemDataModel::ParseServerData(const QString &json_data) {
 
   // 解析录制状态
   if (obj.contains("recording")) {
-    bool recording = obj["recording"].toBool();
+    bool recording = obj["recording"].toInt(0) != 0;
     if (is_recording_ != recording) {
       UpdateRecordingStatus(recording);
     }
