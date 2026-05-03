@@ -21,7 +21,7 @@ SystemDataModel::SystemDataModel(QObject *parent)
       work_mode_(0),
       work_mode_text_(tr("Auto Mode")),
       alarm_delay_(10),
-      yolo_threshold_(0.6),
+      yolo_threshold_(0.45),
       yolo_draw_threshold_(0.4),
       infer_interval_(1),
       stream_fps_(0.0),
